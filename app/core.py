@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
+from collections import Counter, defaultdict
 import json
 from pathlib import Path
 import re
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, List, Optional, Sequence, Set, Tuple
 import unicodedata
 
 from app.storage import Store
@@ -156,10 +157,179 @@ def milestone_1(data_path: str | Path | None = None) -> DialogueCorpus:  # TODO(
     return corpus
 
 
+class NGramModel:
+    """N-gram language model supporting count-based estimation and Laplace smoothing."""
+
+    def __init__(self, n: int = 3, character_id: Optional[str] = None) -> None:
+        if n < 1:
+            raise ValueError(f"N-gram order must be >= 1, got {n}")
+        self.n: int = n
+        self.character_id: Optional[str] = character_id
+
+        # Hierarchical counts: order -> context_tuple -> Counter(target_word -> count)
+        self.counts_by_order: Dict[int, Dict[Tuple[str, ...], Counter[str]]] = {
+            order: defaultdict(Counter) for order in range(1, n + 1)
+        }
+        # Context occurrences: order -> context_tuple -> total occurrences
+        self.context_counts_by_order: Dict[int, Counter[Tuple[str, ...]]] = {
+            order: Counter() for order in range(1, n + 1)
+        }
+        self.vocab: Set[str] = set()
+
+    @property
+    def vocab_size(self) -> int:
+        return len(self.vocab)
+
+    @property
+    def ngram_counts(self) -> Dict[Tuple[str, ...], Counter[str]]:
+        return self.counts_by_order[self.n]
+
+    @property
+    def context_counts(self) -> Counter[Tuple[str, ...]]:
+        return self.context_counts_by_order[self.n]
+
+    @property
+    def unigram_counts(self) -> Counter[str]:
+        return self.counts_by_order[1][()]
+
+    def train(self, sentences: Sequence[Sequence[str]]) -> None:
+        """Accumulate n-gram counts across orders 1..n from tokenized sentences."""
+        for sentence in sentences:
+            if not sentence:
+                continue
+
+            padded = pad_sentence(list(sentence), n=self.n)
+            for token in padded:
+                if token != START_TOKEN:
+                    self.vocab.add(token)
+
+            for order in range(1, self.n + 1):
+                for i in range(len(padded) - order + 1):
+                    sub = padded[i : i + order]
+                    context = tuple(sub[:-1])
+                    target = sub[-1]
+                    if target == START_TOKEN:
+                        continue
+                    self.counts_by_order[order][context][target] += 1
+                    self.context_counts_by_order[order][context] += 1
+
+    def count(self, context: Tuple[str, ...], word: str) -> int:
+        order = len(context) + 1
+        if order in self.counts_by_order:
+            return self.counts_by_order[order][context][word]
+        return 0
+
+    def context_count(self, context: Tuple[str, ...]) -> int:
+        order = len(context) + 1
+        if order in self.context_counts_by_order:
+            return self.context_counts_by_order[order][context]
+        return 0
+
+    def prob(self, word: str, context: Tuple[str, ...], k: float = 1.0) -> float:
+        """Compute conditional probability P(word | context).
+
+        Uses Add-k (Laplace) smoothing:
+            P(w | context) = (Count(context, w) + k) / (Count(context) + k * |V|)
+        When k == 0 (MLE), returns 0.0 if Count(context) == 0.
+        """
+        c_ngram = self.count(context, word)
+        c_context = self.context_count(context)
+        v_size = max(1, self.vocab_size)
+
+        if k <= 0.0:
+            if c_context == 0:
+                return 0.0
+            return c_ngram / c_context
+
+        return (c_ngram + k) / (c_context + (k * v_size))
+
+    def get_distribution(
+        self,
+        context: Tuple[str, ...],
+        k: float = 1.0,
+        use_backoff: bool = False,
+    ) -> Dict[str, float]:
+        """Compute normalized probability distribution for a given context prefix."""
+        candidates = sorted(self.vocab)
+        v_size = max(1, len(candidates))
+        c_context = self.context_count(context)
+
+        if use_backoff and c_context == 0 and len(context) > 0:
+            return self.get_distribution(context[1:], k=k, use_backoff=True)
+
+        if k <= 0.0:
+            if c_context == 0:
+                uniform_p = 1.0 / v_size
+                return {w: uniform_p for w in candidates}
+            return {w: self.count(context, w) / c_context for w in candidates}
+
+        denominator = c_context + (k * v_size)
+        return {w: (self.count(context, w) + k) / denominator for w in candidates}
+
+
+class CharacterDialogueModelManager:
+    """Manages character-conditioned and global n-gram language models."""
+
+    def __init__(self, n: int = 3, k: float = 1.0) -> None:
+        self.n = n
+        self.k = k
+        self.models: Dict[str, NGramModel] = {}
+        self.global_model: NGramModel = NGramModel(n=n, character_id="global")
+
+    def train_from_corpus(self, corpus: DialogueCorpus) -> None:
+        # Train global model on all sentences
+        self.global_model.train(corpus.get_sentences())
+
+        # Train isolated character models to preserve distinct style
+        for char_id in corpus.get_characters():
+            char_sentences = corpus.get_sentences(character_id=char_id)
+            model = NGramModel(n=self.n, character_id=char_id)
+            model.train(char_sentences)
+            self.models[char_id] = model
+
+    def get_model(self, character_id: Optional[str] = None) -> NGramModel:
+        if character_id and character_id in self.models:
+            return self.models[character_id]
+        return self.global_model
+
+
 # --- Milestone 2: Build the n-gram language model with smoothing.
 # Hint: Implement the N-gram model and apply smoothing techniques like Laplace smoothing.
-def milestone_2():  # TODO(milestone 2)
-    raise NotImplementedError("TODO(milestone 2)")
+def milestone_2(
+    corpus: Optional[DialogueCorpus] = None,
+    n: int = 3,
+    k: float = 1.0,
+) -> CharacterDialogueModelManager:  # TODO(milestone 2)
+    """Build and train the N-gram language models with Laplace smoothing.
+
+    Args:
+        corpus: Preprocessed DialogueCorpus instance (or None to load default).
+        n: N-gram order (e.g. 2 for bigram, 3 for trigram).
+        k: Add-k Laplace smoothing parameter.
+
+    Returns:
+        CharacterDialogueModelManager containing character-specific and global models.
+    """
+    if corpus is None:
+        corpus = milestone_1()
+
+    manager = CharacterDialogueModelManager(n=n, k=k)
+    manager.train_from_corpus(corpus)
+
+    # Persist milestone 2 metadata
+    store = Store()
+    characters = corpus.get_characters()
+    store.put("milestone_2", {
+        "status": "completed",
+        "ngram_order": n,
+        "smoothing_k": k,
+        "character_vocab_sizes": {
+            cid: manager.get_model(cid).vocab_size for cid in characters
+        },
+        "global_vocab_size": manager.global_model.vocab_size,
+    })
+
+    return manager
 
 
 # --- Milestone 3: Implement dialogue generation logic using the model.

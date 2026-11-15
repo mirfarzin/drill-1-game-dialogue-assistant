@@ -2,15 +2,19 @@
 
 They start skipped. Remove the `skip` line as you work on each milestone.
 """
+import math
 from pathlib import Path
 import pytest
 
 from app.core import (
     END_TOKEN,
     START_TOKEN,
+    CharacterDialogueModelManager,
     DialogueCorpus,
+    NGramModel,
     detokenize,
     milestone_1,
+    milestone_2,
     normalize_text,
     pad_sentence,
     tokenize,
@@ -78,9 +82,118 @@ def test_detokenize_dialogue():
 
 
 # Milestone 2: Build the n-gram language model with smoothing.
-@pytest.mark.skip(reason="remove this line when you start milestone 2")
-def test_milestone_2():
-    raise NotImplementedError("write the test for milestone 2")
+def test_milestone_2(tmp_path, monkeypatch):
+    """Test milestone 2 language model building, character isolation, and metadata."""
+    monkeypatch.setenv("DATA_PATH", str(tmp_path / "app.json"))
+
+    corpus = milestone_1()
+    manager = milestone_2(corpus=corpus, n=3, k=1.0)
+    assert isinstance(manager, CharacterDialogueModelManager)
+
+    # Check store metadata
+    store = Store()
+    meta = store.get("milestone_2")
+    assert meta is not None
+    assert meta["status"] == "completed"
+    assert meta["ngram_order"] == 3
+    assert meta["smoothing_k"] == 1.0
+
+
+def test_ngram_counting_bigram_and_trigram():
+    """Verify raw frequency counts for bigrams and trigrams."""
+    model = NGramModel(n=3)
+    sentences = [
+        ["the", "fire", "burns", "bright"],
+        ["the", "fire", "needs", "coal"],
+    ]
+    model.train(sentences)
+
+    # Bigram counts: ('the',) -> 'fire' is 2
+    assert model.count(("the",), "fire") == 2
+    # Trigram counts: ('the', 'fire') -> 'burns' is 1, 'needs' is 1
+    assert model.count(("the", "fire"), "burns") == 1
+    assert model.count(("the", "fire"), "needs") == 1
+    assert model.count(("the", "fire"), "water") == 0
+    assert model.context_count(("the", "fire")) == 2
+
+
+def test_mle_and_laplace_smoothing_arithmetic():
+    """Verify MLE and Add-k Laplace smoothing calculation formulas."""
+    model = NGramModel(n=2)
+    sentences = [["cold", "iron"]]
+    model.train(sentences)
+    # Vocab: 'cold', 'iron', '</s>' => size 3
+    v_size = model.vocab_size
+    assert v_size == 3
+
+    # MLE (k=0.0): P('iron' | 'cold') = 1 / 1 = 1.0
+    p_mle = model.prob("iron", ("cold",), k=0.0)
+    assert p_mle == 1.0
+
+    # Add-1 Laplace (k=1.0): (1 + 1) / (1 + 1 * 3) = 2 / 4 = 0.5
+    p_laplace = model.prob("iron", ("cold",), k=1.0)
+    assert p_laplace == 0.5
+
+    # Unseen in context with k=1.0: P('cold' | 'cold') = (0 + 1) / (1 + 3) = 0.25
+    p_unseen_trans = model.prob("cold", ("cold",), k=1.0)
+    assert p_unseen_trans == 0.25
+
+    # Completely unseen context with k=1.0: P('iron' | 'hot') = (0 + 1) / (0 + 3) = 1/3
+    p_unseen_ctx = model.prob("iron", ("hot",), k=1.0)
+    assert math.isclose(p_unseen_ctx, 1.0 / 3.0, rel_tol=1e-5)
+
+
+def test_probability_distribution_normalization():
+    """Verify sum of probabilities across the vocabulary equals 1.0."""
+    model = NGramModel(n=3)
+    sentences = [
+        ["good", "steel", "does", "not", "whine"],
+        ["a", "dull", "sword", "is", "worse"],
+    ]
+    model.train(sentences)
+
+    context = ("good", "steel")
+    dist = model.get_distribution(context, k=1.0)
+    assert math.isclose(sum(dist.values()), 1.0, rel_tol=1e-5)
+
+    # Completely unseen context with pure Laplace (use_backoff=False)
+    unseen_context = ("ancient", "parchment")
+    unseen_dist = model.get_distribution(unseen_context, k=1.0, use_backoff=False)
+    assert math.isclose(sum(unseen_dist.values()), 1.0, rel_tol=1e-5)
+    # Under pure Laplace, unseen context gives uniform 1 / |V|
+    expected_uniform = 1.0 / model.vocab_size
+    for p in unseen_dist.values():
+        assert math.isclose(p, expected_uniform, rel_tol=1e-5)
+
+    # Unseen context with backoff (use_backoff=True)
+    backoff_dist = model.get_distribution(unseen_context, k=1.0, use_backoff=True)
+    assert math.isclose(sum(backoff_dist.values()), 1.0, rel_tol=1e-5)
+
+
+def test_character_specific_model_isolation():
+    """Verify that NPC characters maintain isolated vocabulary distributions."""
+    corpus = milestone_1()
+    manager = CharacterDialogueModelManager(n=3, k=1.0)
+    manager.train_from_corpus(corpus)
+
+    garrick_model = manager.get_model("garrick_blacksmith")
+    elindra_model = manager.get_model("elindra_mage")
+    kaelen_model = manager.get_model("kaelen_rogue")
+    pip_model = manager.get_model("pip_bard")
+
+    # Garrick has anvil/hammer terms, Elindra/Pip/Kaelen do not
+    assert garrick_model.unigram_counts["anvil"] > 0
+    assert elindra_model.unigram_counts["anvil"] == 0
+    assert kaelen_model.unigram_counts["anvil"] == 0
+    assert pip_model.unigram_counts["anvil"] == 0
+
+    # Elindra has astral/runes terms, Garrick does not
+    assert elindra_model.unigram_counts["runes"] > 0
+    assert garrick_model.unigram_counts["runes"] == 0
+
+    # Pip has lute/ballad terms, Garrick does not
+    assert pip_model.unigram_counts["lute"] > 0
+    assert garrick_model.unigram_counts["lute"] == 0
 
 
 # Milestone 3: Implement dialogue generation logic using the model.
