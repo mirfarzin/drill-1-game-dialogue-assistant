@@ -16,7 +16,7 @@ Tick these off as you go, and commit after each one.
       Hint: Use text processing techniques to clean and prepare your dialogue data.
 - [x] **2. Build the n-gram language model with smoothing.**  
       Hint: Implement the N-gram model and apply smoothing techniques like Laplace smoothing.
-- [ ] **3. Implement dialogue generation logic using the model.**  
+- [x] **3. Implement dialogue generation logic using the model.**  
       Hint: Develop the logic to iteratively predict the next word based on the model.
 - [ ] **4. Design a CLI where users can input a starting phrase and generate dialogue.**  
       Hint: Create a simple command-line interface to take user input and display generated text.

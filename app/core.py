@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections import Counter, defaultdict
 import json
 from pathlib import Path
+import random
 import re
 from typing import Dict, List, Optional, Sequence, Set, Tuple
 import unicodedata
@@ -332,10 +333,129 @@ def milestone_2(
     return manager
 
 
+class DialogueGenerator:
+    """Dialogue generation engine using n-gram language models with weighted sampling."""
+
+    def __init__(
+        self,
+        model: NGramModel,
+        fallback_model: Optional[NGramModel] = None,
+        k: float = 0.05,
+        seed: Optional[int] = None,
+    ) -> None:
+        self.model = model
+        self.fallback_model = fallback_model
+        self.k = k
+        self.rng = random.Random(seed)
+
+    def set_seed(self, seed: Optional[int]) -> None:
+        self.rng = random.Random(seed)
+
+    def _prepare_initial_context(
+        self, prompt_tokens: List[str]
+    ) -> Tuple[List[str], Tuple[str, ...]]:
+        context_len = max(1, self.model.n - 1)
+        if not prompt_tokens:
+            return [], tuple([START_TOKEN] * context_len)
+
+        output_tokens = list(prompt_tokens)
+        if len(prompt_tokens) < context_len:
+            pad_needed = context_len - len(prompt_tokens)
+            context = tuple([START_TOKEN] * pad_needed + prompt_tokens)
+        else:
+            context = tuple(prompt_tokens[-context_len:])
+        return output_tokens, context
+
+    def _sample_next_token(self, context: Tuple[str, ...]) -> str:
+        distribution = self.model.get_distribution(
+            context, k=self.k, use_backoff=True
+        )
+        words = list(distribution.keys())
+        probs = list(distribution.values())
+        return self.rng.choices(words, weights=probs, k=1)[0]
+
+    def generate(
+        self,
+        prompt: str = "",
+        max_tokens: int = 25,
+        stop_at_end_token: bool = True,
+    ) -> str:
+        prompt_tokens = tokenize(prompt)
+        output_tokens, context = self._prepare_initial_context(prompt_tokens)
+        generated_count = 0
+
+        while generated_count < max_tokens:
+            next_token = self._sample_next_token(context)
+            generated_count += 1
+
+            if next_token == END_TOKEN:
+                if stop_at_end_token:
+                    if not output_tokens or output_tokens[-1] not in {".", "!", "?"}:
+                        output_tokens.append(".")
+                    break
+                else:
+                    continue
+
+            output_tokens.append(next_token)
+            context = tuple(list(context[1:]) + [next_token])
+
+        return detokenize(output_tokens)
+
+    def generate_alternatives(
+        self,
+        prompt: str = "",
+        max_tokens: int = 25,
+        count: int = 3,
+    ) -> List[str]:
+        return [self.generate(prompt=prompt, max_tokens=max_tokens) for _ in range(max(1, count))]
+
+
 # --- Milestone 3: Implement dialogue generation logic using the model.
 # Hint: Develop the logic to iteratively predict the next word based on the model.
-def milestone_3():  # TODO(milestone 3)
-    raise NotImplementedError("TODO(milestone 3)")
+def milestone_3(
+    manager: Optional[CharacterDialogueModelManager] = None,
+    character_id: str = "garrick_blacksmith",
+    prompt: str = "Good steel",
+    max_tokens: int = 25,
+    k: float = 0.05,
+    seed: Optional[int] = 42,
+) -> str:  # TODO(milestone 3)
+    """Generate dialogue using character-conditioned n-gram model.
+
+    Args:
+        manager: Trained CharacterDialogueModelManager (or None to train default).
+        character_id: Target NPC character ID.
+        prompt: Starting phrase or prompt.
+        max_tokens: Maximum tokens to generate.
+        k: Smoothing parameter.
+        seed: Random seed for reproducible generation.
+
+    Returns:
+        Generated dialogue snippet.
+    """
+    if manager is None:
+        manager = milestone_2()
+
+    model = manager.get_model(character_id)
+    generator = DialogueGenerator(
+        model=model,
+        fallback_model=manager.global_model,
+        k=k,
+        seed=seed,
+    )
+    snippet = generator.generate(prompt=prompt, max_tokens=max_tokens)
+
+    # Persist milestone 3 metadata
+    store = Store()
+    store.put("milestone_3", {
+        "status": "completed",
+        "character": character_id,
+        "prompt": prompt,
+        "max_tokens": max_tokens,
+        "output": snippet,
+    })
+
+    return snippet
 
 
 # --- Milestone 4: Design a CLI where users can input a starting phrase and generate dialogue.

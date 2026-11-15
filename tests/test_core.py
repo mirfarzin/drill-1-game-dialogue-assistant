@@ -11,10 +11,12 @@ from app.core import (
     START_TOKEN,
     CharacterDialogueModelManager,
     DialogueCorpus,
+    DialogueGenerator,
     NGramModel,
     detokenize,
     milestone_1,
     milestone_2,
+    milestone_3,
     normalize_text,
     pad_sentence,
     tokenize,
@@ -197,9 +199,68 @@ def test_character_specific_model_isolation():
 
 
 # Milestone 3: Implement dialogue generation logic using the model.
-@pytest.mark.skip(reason="remove this line when you start milestone 3")
-def test_milestone_3():
-    raise NotImplementedError("write the test for milestone 3")
+def test_milestone_3(tmp_path, monkeypatch):
+    """Test milestone 3 dialogue generation and metadata persistence."""
+    monkeypatch.setenv("DATA_PATH", str(tmp_path / "app.json"))
+
+    output = milestone_3(character_id="garrick_blacksmith", prompt="Good steel", seed=42)
+    assert isinstance(output, str)
+    assert output.lower().startswith("good steel")
+
+    store = Store()
+    meta = store.get("milestone_3")
+    assert meta is not None
+    assert meta["status"] == "completed"
+    assert meta["character"] == "garrick_blacksmith"
+
+
+def test_generation_empty_prompt_and_reproducibility():
+    """Verify empty prompt priming and reproducible generation with seed."""
+    corpus = milestone_1()
+    manager = CharacterDialogueModelManager(n=3, k=0.05)
+    manager.train_from_corpus(corpus)
+
+    model = manager.get_model("pip_bard")
+    gen1 = DialogueGenerator(model=model, seed=123)
+    gen2 = DialogueGenerator(model=model, seed=123)
+
+    out1 = gen1.generate(prompt="", max_tokens=15)
+    out2 = gen2.generate(prompt="", max_tokens=15)
+
+    assert len(out1) > 0
+    assert out1 == out2
+
+
+def test_generation_max_tokens_and_alternatives():
+    """Verify max token limitation and multi-candidate generation."""
+    corpus = milestone_1()
+    manager = CharacterDialogueModelManager(n=3, k=0.05)
+    manager.train_from_corpus(corpus)
+
+    model = manager.get_model("elindra_mage")
+    gen = DialogueGenerator(model=model, seed=99)
+
+    alts = gen.generate_alternatives(prompt="The stars", max_tokens=10, count=3)
+    assert len(alts) == 3
+    for alt in alts:
+        assert alt.lower().startswith("the stars")
+        assert len(alt.split()) <= 15
+
+
+def test_generation_character_consistency():
+    """Verify character vocabulary style during generation."""
+    corpus = milestone_1()
+    manager = CharacterDialogueModelManager(n=3, k=0.0)
+    manager.train_from_corpus(corpus)
+
+    garrick_gen = DialogueGenerator(model=manager.get_model("garrick_blacksmith"), seed=42)
+    elindra_gen = DialogueGenerator(model=manager.get_model("elindra_mage"), seed=42)
+
+    garrick_text = garrick_gen.generate(prompt="Good steel", max_tokens=20)
+    elindra_text = elindra_gen.generate(prompt="The stars", max_tokens=20)
+
+    assert any(w in garrick_text for w in ["iron", "shield", "coal", "pommel", "blade", "anvil", "tools", "whine", "forge"])
+    assert any(w in elindra_text for w in ["stars", "align", "geometries", "spire", "runes", "ether", "veil", "prophecy"])
 
 
 # Milestone 4: Design a CLI where users can input a starting phrase and generate dialogue.
