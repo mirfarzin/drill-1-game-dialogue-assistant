@@ -18,7 +18,7 @@ Tick these off as you go, and commit after each one.
       Hint: Implement the N-gram model and apply smoothing techniques like Laplace smoothing.
 - [x] **3. Implement dialogue generation logic using the model.**  
       Hint: Develop the logic to iteratively predict the next word based on the model.
-- [ ] **4. Design a CLI where users can input a starting phrase and generate dialogue.**  
+- [x] **4. Design a CLI where users can input a starting phrase and generate dialogue.**  
       Hint: Create a simple command-line interface to take user input and display generated text.
 
 ## N-Gram Language Model & Smoothing Details
@@ -52,8 +52,97 @@ To ensure NPC personality consistency, the model manager maintains isolated mode
 Each character model possesses its own isolated vocabulary, preventing one character's speaking style from mixing into another's.
 
 ### Test Verification
-- All 12 active tests pass (`tests/test_core.py` and `tests/test_smoke.py`).
-- Milestones 3 and 4 remain safely skipped pending implementation.
+- All **21 unit & smoke tests** pass (`tests/test_core.py` and `tests/test_smoke.py`).
+- 0 skipped, 0 failed.
+
+## CLI Usage Guide
+
+```bash
+# Check plumbing command
+python -m app.cli hello
+
+# List all available NPC characters and line counts
+python -m app.cli characters
+
+# Generate dialogue for Garrick the Blacksmith
+python -m app.cli generate -c garrick_blacksmith -p "Good steel"
+
+# Generate dialogue for Elindra the Mage with custom length
+python -m app.cli generate -c elindra_mage -p "The stars" -l 20
+
+# Generate multiple alternatives and save to a text file
+python -m app.cli generate -c pip_bard -p "A song" -a 3 -o generated_ballads.txt
+
+# Launch interactive terminal studio session
+python -m app.cli interactive
+```
+
+### CLI Command Options
+
+| Command / Option | Description | Default |
+|---|---|---|
+| `hello` | Verify baseline starter plumbing | N/A |
+| `characters` | List available NPC character IDs and stats | N/A |
+| `generate` | Generate dialogue snippet from a starting phrase | N/A |
+| `-c, --character` | NPC ID (`garrick_blacksmith`, `elindra_mage`, `pip_bard`, `kaelen_rogue`) | `garrick_blacksmith` |
+| `-p, --prompt` | Starting phrase or sentence seed | `""` |
+| `-l, --length` | Maximum generated tokens | `25` |
+| `-n, --ngram` | N-gram order (2 or 3) | `3` |
+| `-k, --smoothing` | Laplace add-$k$ parameter (0 for MLE, 0.05 for balanced) | `0.05` |
+| `-a, --alternatives`| Number of alternative snippets to generate | `1` |
+| `-s, --seed` | Random seed for reproducible generation | `None` |
+| `-o, --output-file`| Path to save generated dialogue | `None` |
+| `interactive` | Launch real-time interactive terminal studio session | N/A |
+
+### Example Outputs
+
+#### Garrick the Grumpy Blacksmith
+```bash
+python -m app.cli generate -c garrick_blacksmith -p "Good steel" -k 0.0
+```
+```
+Character: Garrick the Grumpy Blacksmith [garrick_blacksmith]
+N-gram Order: 3 | Laplace Smoothing k: 0.0
+Seed Prompt: "Good steel"
+Generated Dialogue:
+  "Good steel does not bargain with fools who break tools."
+```
+
+#### Elindra the Cryptic Mage
+```bash
+python -m app.cli generate -c elindra_mage -p "The stars" -k 0.0
+```
+```
+Character: Elindra the Cryptic Mage [elindra_mage]
+N-gram Order: 3 | Laplace Smoothing k: 0.0
+Seed Prompt: "The stars"
+Generated Dialogue:
+  "The stars align in fractured geometries above the weeping spire."
+```
+
+#### Pip the Cheerful Bard
+```bash
+python -m app.cli generate -c pip_bard -p "A song" -k 0.0
+```
+```
+Character: Pip the Cheerful Bard [pip_bard]
+N-gram Order: 3 | Laplace Smoothing k: 0.0
+Seed Prompt: "A song"
+Generated Dialogue:
+  "A song in the tavern fire is warm and the ballad of the golden feather!"
+```
+
+#### Kaelen the Shadow Rogue
+```bash
+python -m app.cli generate -c kaelen_rogue -p "Shadows are" -k 0.0
+```
+```
+Character: Kaelen the Shadow Rogue [kaelen_rogue]
+N-gram Order: 3 | Laplace Smoothing k: 0.0
+Seed Prompt: "Shadows are"
+Generated Dialogue:
+  "Shadows are kinder allies than honest promises in this city."
+```
 
 ## Run it
 

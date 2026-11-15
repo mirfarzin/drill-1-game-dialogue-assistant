@@ -17,6 +17,7 @@ from app.core import (
     milestone_1,
     milestone_2,
     milestone_3,
+    milestone_4,
     normalize_text,
     pad_sentence,
     tokenize,
@@ -264,6 +265,71 @@ def test_generation_character_consistency():
 
 
 # Milestone 4: Design a CLI where users can input a starting phrase and generate dialogue.
-@pytest.mark.skip(reason="remove this line when you start milestone 4")
-def test_milestone_4():
-    raise NotImplementedError("write the test for milestone 4")
+def test_milestone_4(tmp_path, monkeypatch):
+    """Test milestone 4 CLI helper and metadata persistence."""
+    monkeypatch.setenv("DATA_PATH", str(tmp_path / "app.json"))
+
+    outputs = milestone_4(character_id="pip_bard", prompt="A song", alternatives=2, seed=42)
+    assert len(outputs) == 2
+    for out in outputs:
+        assert out.lower().startswith("a song")
+
+    store = Store()
+    meta = store.get("milestone_4")
+    assert meta is not None
+    assert meta["status"] == "completed"
+    assert meta["character"] == "pip_bard"
+    assert meta["alternatives_count"] == 2
+
+
+def test_cli_characters_command(capsys):
+    from app.cli import main
+    exit_code = main(["characters"])
+    assert exit_code == 0
+    captured = capsys.readouterr().out
+    assert "garrick_blacksmith" in captured
+    assert "elindra_mage" in captured
+    assert "pip_bard" in captured
+    assert "kaelen_rogue" in captured
+
+
+def test_cli_generate_command(capsys):
+    from app.cli import main
+    exit_code = main([
+        "generate",
+        "-c", "garrick_blacksmith",
+        "-p", "Good steel",
+        "-l", "15",
+        "-s", "42",
+    ])
+    assert exit_code == 0
+    captured = capsys.readouterr().out
+    assert "Garrick the Grumpy Blacksmith" in captured
+    assert "Good steel" in captured
+
+
+def test_cli_generate_save_to_file(tmp_path, capsys):
+    from app.cli import main
+    out_file = tmp_path / "saved_dialogue.txt"
+    exit_code = main([
+        "generate",
+        "-c", "elindra_mage",
+        "-p", "The stars",
+        "-a", "2",
+        "-o", str(out_file),
+        "-s", "10",
+    ])
+    assert exit_code == 0
+    assert out_file.exists()
+    content = out_file.read_text(encoding="utf-8")
+    assert "Elindra the Cryptic Mage" in content
+    assert "[1]" in content
+    assert "[2]" in content
+
+
+def test_cli_unknown_character_error(capsys):
+    from app.cli import main
+    exit_code = main(["generate", "-c", "unknown_dragon"])
+    assert exit_code == 1
+    err = capsys.readouterr().err
+    assert "Error: Unknown character 'unknown_dragon'" in err

@@ -460,5 +460,55 @@ def milestone_3(
 
 # --- Milestone 4: Design a CLI where users can input a starting phrase and generate dialogue.
 # Hint: Create a simple command-line interface to take user input and display generated text.
-def milestone_4():  # TODO(milestone 4)
-    raise NotImplementedError("TODO(milestone 4)")
+def milestone_4(
+    character_id: str = "garrick_blacksmith",
+    prompt: str = "Good steel",
+    length: int = 25,
+    alternatives: int = 1,
+    ngram: int = 3,
+    k: float = 0.05,
+    seed: Optional[int] = 42,
+) -> List[str]:  # TODO(milestone 4)
+    """CLI programmatic entry point generating dialogue alternatives.
+
+    Args:
+        character_id: Chosen NPC character ID.
+        prompt: Starting input phrase.
+        length: Maximum length in tokens.
+        alternatives: Number of alternative dialogue snippets.
+        ngram: N-gram model order.
+        k: Smoothing parameter.
+        seed: Random seed.
+
+    Returns:
+        List of generated dialogue alternatives.
+    """
+    corpus = milestone_1()
+    manager = CharacterDialogueModelManager(n=ngram, k=k)
+    manager.train_from_corpus(corpus)
+
+    model = manager.get_model(character_id)
+    generator = DialogueGenerator(
+        model=model,
+        fallback_model=manager.global_model,
+        k=k,
+        seed=seed,
+    )
+
+    outputs = generator.generate_alternatives(
+        prompt=prompt,
+        max_tokens=length,
+        count=alternatives,
+    )
+
+    store = Store()
+    store.put("milestone_4", {
+        "status": "completed",
+        "character": character_id,
+        "prompt": prompt,
+        "length": length,
+        "alternatives_count": len(outputs),
+        "outputs": outputs,
+    })
+
+    return outputs
