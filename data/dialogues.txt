@@ -1,0 +1,107 @@
+[garrick_blacksmith] Keep your hands off the anvil unless you want broken fingers.
+[garrick_blacksmith] Good steel does not whine when the hammer strikes it.
+[garrick_blacksmith] If you break that blade, do not come crying to my forge.
+[garrick_blacksmith] Cold iron bends for no one without honest sweat and heavy fire.
+[garrick_blacksmith] Buy something useful or stop blocking the bellows.
+[garrick_blacksmith] A dull sword is worse than an empty sheath, lad.
+[garrick_blacksmith] I forge weapons to kill beasts, not for strutting around market squares.
+[garrick_blacksmith] Pay the coin first, inspect the crossguard second.
+[garrick_blacksmith] The fire needs more coal if we want tempered bronze.
+[garrick_blacksmith] Tough armor will not save a fool who forgets how to dodge.
+[garrick_blacksmith] Hammer and anvil teach lessons that words never could.
+[garrick_blacksmith] Do not swing that hammer like a broom stick.
+[garrick_blacksmith] Iron remembers every strike of the master.
+[garrick_blacksmith] Stand clear of the sparks or nurse your burns alone.
+[garrick_blacksmith] A heavy shield takes time and raw muscle to shape.
+[garrick_blacksmith] I have been pounding red hot iron since before you could walk.
+[garrick_blacksmith] The tongs are hot, so back away from the furnace.
+[garrick_blacksmith] True craft requires grease, grit, and stubborn pride.
+[garrick_blacksmith] You want a masterpiece, but you brought pocket copper.
+[garrick_blacksmith] The forge will not wait while you daydream.
+[garrick_blacksmith] Sharpen that edge before the rust eats your dinner.
+[garrick_blacksmith] A blacksmith does not bargain with fools who break tools.
+[garrick_blacksmith] Put some weight behind your arm or put down the mallet.
+[garrick_blacksmith] Steel sings when quenched right, and screeches when rushed.
+[garrick_blacksmith] Shut the workshop door; the draft ruins the furnace heat.
+[garrick_blacksmith] A warrior who respects his weapon cleans the pommel every night.
+
+[elindra_mage] The stars align in fractured geometries above the weeping spire.
+[elindra_mage] Whispers in the ether reveal what mortal eyes refuse to witness.
+[elindra_mage] Ancient runes remember the oaths forgotten by mortal blood.
+[elindra_mage] Magic is not commanded; it is woven through quiet patience.
+[elindra_mage] Every shadow cast by moonlight carries an unspoken secret.
+[elindra_mage] The celestial veil thins when the silver comet awakens.
+[elindra_mage] Disturb not the ley lines unless you welcome an arcane storm.
+[elindra_mage] Time bends like silk beneath the weight of prophecy.
+[elindra_mage] Listen closely, traveler, for the stones speak in riddles.
+[elindra_mage] The arcane glyphs pulse with ancient slumbering power.
+[elindra_mage] A circle drawn in ash can hold back forgotten horrors.
+[elindra_mage] Look into the scrying glass and see what tomorrow conceals.
+[elindra_mage] The astral winds whisper names that were never spoken aloud.
+[elindra_mage] Knowledge is a fire that consumes the vessel holding it.
+[elindra_mage] Do not touch the crystal orb while the eclipse remains unbroken.
+[elindra_mage] The cosmos remembers what kings choose to forget.
+[elindra_mage] Between two heartbeats lies the doorway to the Nether Realm.
+[elindra_mage] The stars speak only when mortals cease their clamor.
+[elindra_mage] We are merely shadows walking across an ancient parchment.
+[elindra_mage] Speak the secret incantation only when the twin moons cross.
+[elindra_mage] Every spell leaves an invisible ripple across the astral tide.
+[elindra_mage] Beware the silence of the void, for it listens hungry.
+[elindra_mage] The runes glow blue when destiny turns its wheel.
+[elindra_mage] Fate is an intricate tapestry woven with silver threads.
+[elindra_mage] You seek answers, yet you fear the light that brings them.
+[elindra_mage] The ethereal plane shifts with every breath of the cosmos.
+
+[pip_bard] A song in the tavern brings brighter dawn than golden crowns!
+[pip_bard] Raise your tankards high and let the merry lute sing!
+[pip_bard] Every dragon has a tale, and every hero needs a ballad!
+[pip_bard] A smile costs no silver, but a good tune buys warm cider!
+[pip_bard] Dance upon the cobblestones while the fiddle plays sweet tunes!
+[pip_bard] Life is a joyous carnival for those bold enough to laugh!
+[pip_bard] Gather round, brave folk, and hear the ballad of the golden feather!
+[pip_bard] No monster is too terrifying when met with jolly courage and verse!
+[pip_bard] Sing with me under the lanterns until the morning sun rises!
+[pip_bard] A hearty laugh scatters dark clouds faster than any spell!
+[pip_bard] Another round of spiced ale for the grand storytellers!
+[pip_bard] Strum the strings, tap your boots, and shake away all sorrow!
+[pip_bard] A traveler without a song is like a bird without wings!
+[pip_bard] The prettiest melodies are found where good friends gather.
+[pip_bard] Give me a rhyming verse and I will charm the grumpiest guard!
+[pip_bard] Even fierce knights smile when the flute plays the village reel!
+[pip_bard] What is glory without a ballad to keep your legend alive?
+[pip_bard] Let your heart leap like a trout in a sunlit stream!
+[pip_bard] There is magic in laughter that philosophers could never write down!
+[pip_bard] Fill my cap with coppers and I shall sing until midnight!
+[pip_bard] Raise your voices, my companions, the road ahead is bright!
+[pip_bard] A sunny day and a jolly rhyme can cure any broken spirit!
+[pip_bard] The tavern fire is warm and the ballad has only just begun!
+[pip_bard] Come now, clap your hands and toast to friendship!
+[pip_bard] Adventure awaits just beyond the festival gates!
+[pip_bard] Sweet wine and merry harmonies make every evening worthwhile!
+
+[kaelen_rogue] Step softly, or your next footprint will be your last.
+[kaelen_rogue] Shadows are kinder allies than honest promises in this city.
+[kaelen_rogue] A quick dagger solves puzzles that philosophers argue about for years.
+[kaelen_rogue] Watch your coin pouch, or someone lighter on their feet will.
+[kaelen_rogue] The night has ears, and the alleyways keep no promises.
+[kaelen_rogue] Never look a smuggler in the eyes before checking the exits.
+[kaelen_rogue] Quiet blades leave no witness to tell tales to the watch.
+[kaelen_rogue] Gold talks louder than courage when the tavern lanterns dim.
+[kaelen_rogue] Trust is a luxury only the dead can afford out here.
+[kaelen_rogue] One wrong turn in the sewer maze and you feed the wharf rats.
+[kaelen_rogue] Keep your back against the brick and your fingers near your blade.
+[kaelen_rogue] A locked door is merely an invitation written in iron.
+[kaelen_rogue] The city watch is slow, but arrows fly faster than apologies.
+[kaelen_rogue] Never carry more loot than you can run with over rooftops.
+[kaelen_rogue] Poison on the dart is subtle, silent, and wonderfully persuasive.
+[kaelen_rogue] If anyone asks, we were never drinking at this corner.
+[kaelen_rogue] Rooftops belong to crows, cats, and those who avoid city taxes.
+[kaelen_rogue] A slipped knot and a greased hinge make quick escapes easy.
+[kaelen_rogue] Do not whisper secrets when the cobblestones are wet with rain.
+[kaelen_rogue] Every lock has a weakness if you know which pick to turn.
+[kaelen_rogue] Gold in hand is better than promises signed by corrupt nobles.
+[kaelen_rogue] Stay in the shadows until the torchbearer passes your perch.
+[kaelen_rogue] A good thief knows when to pocket the loot and vanish.
+[kaelen_rogue] Curiosity gets common folk killed in these winding alleys.
+[kaelen_rogue] Keep your voice low; walls have cracks and beggars have ears.
+[kaelen_rogue] A cloak of dark wool hides more blood than silk ever will.

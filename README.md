@@ -12,7 +12,7 @@ This Game Dialogue Assistant is a tool designed for game designers. It helps gen
 
 Tick these off as you go, and commit after each one.
 
-- [ ] **1. Collect and preprocess a corpus of game dialogues.**  
+- [x] **1. Collect and preprocess a corpus of game dialogues.**  
       Hint: Use text processing techniques to clean and prepare your dialogue data.
 - [ ] **2. Build the n-gram language model with smoothing.**  
       Hint: Implement the N-gram model and apply smoothing techniques like Laplace smoothing.
