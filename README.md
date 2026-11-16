@@ -1,3 +1,5 @@
+[![Built with askThili](https://ask.thili.ai/api/v1/public/projects/zdqgtzrexp/badge.svg)](https://ask.thili.ai/b/zdqgtzrexp)
+
 # Game Dialogue Assistant
 
 This Game Dialogue Assistant is a tool designed for game designers. It helps generate dialogue snippets for Non-Player Characters (NPCs) by leveraging a next-word predictor model trained on a corpus of game scripts. The goal is to ensure character consistency and facilitate rapid prototyping of game narratives.
